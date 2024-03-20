@@ -1,23 +1,48 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { axios } from "axios";
+import  axios  from "axios";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
+   const router = useRouter();
   const [user, setUser] = React.useState({
     email: "",
     password: "",
-    username: "",
   });
+  const [buttonDisabled, setButtonDisabled] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);    
+  
+  useEffect(() => {
+    if (user.email.length > 0 && user.password.length > 0) {
+      setButtonDisabled(true);
+    }
+  },[user]);
 
-  const onLogin = async () => {};
+  const onLogin = async (e:any) => {
+
+    try {
+      e.preventDefault()
+      setLoading(true); 
+      const response = await axios.post("/api/users/login", user);
+      console.log(response)
+      console.log("login success: ", response.data);
+      toast.success("login success");
+      router.push(`profile/`+ response.data.username);
+    } catch (error:any) {
+      console.log(`login error: ${error.message}`);
+      toast.error(`login error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign In
+            {loading ? "Loading..." : "Login"}
           </h2>
         </div>
         <form className="mt-8 space-y-6">
@@ -31,7 +56,7 @@ export default function LoginPage() {
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
+              
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
@@ -46,7 +71,7 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="new-password"
+              
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
